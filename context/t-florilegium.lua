@@ -12,6 +12,14 @@ local M = {}
 M.version = "2.0.1"                -- the release; it must be florilegium.lua's, checked below
 local this = M.version
 
+-- the drawing code sends its warnings (an authored margin on a page it was not made
+-- for, a \florilegiumbloom that names no motif) through LaTeX's luatexbase; here
+-- they go to ConTeXt's log
+luatexbase = luatexbase or {}
+luatexbase.module_warning = luatexbase.module_warning or function(name, msg)
+  logs.report(name, "warning: %s", msg)
+end
+
 local ink = require("florilegium-ink")
 M = require("florilegium")                    -- the shared glue: seeds, primitives, compositions
 if M.version ~= this then

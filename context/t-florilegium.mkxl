@@ -223,6 +223,8 @@
 
 \permanent\protected\def\florilegiumtextend
   {\par
+   \doifnot{\florilegiumparameter{composition}}{grown}
+     {\writestatus{florilegium}{warning: \string\florilegiumtextend\space needs composition=grown; nothing is done with it}}%
    \xdef\florilegium_end_page {\the\realpageno}%
    \xdef\florilegium_end_total{\number\dimexpr\pagetotal+\pagedepth\relax}}
 
