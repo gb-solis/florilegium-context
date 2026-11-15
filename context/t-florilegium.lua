@@ -94,6 +94,9 @@ function M.geometry()
   local function baseline(top, h) return top - (h - sht - sdp) / 2 - sht end
   g.headrule = baseline(g.ytop + cm("headerdistance") + cm("headerheight"), cm("headerheight")) - 0.1
   g.footy = baseline(g.ybot - cm("footerdistance"), cm("footerheight"))
+  -- a layout without a header (header=0pt) has no line for the rule to hang under: it
+  -- would run through the first line of the text, so it goes 7 mm above the text block
+  if cm("headerheight") < 0.01 then g.headrule = math.min(g.ytop + 0.7, g.ph - 0.5) end
   return g
 end
 
