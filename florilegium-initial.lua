@@ -25,7 +25,14 @@ local function dist(ax, ay, bx, by) local dx, dy = ax - bx, ay - by return sqrt(
 local cache = {}
 local function font_glyphs(file)
   if cache[file] then return cache[file] end
-  local path = kpse.find_file(file, "opentype fonts") or kpse.find_file(file, "truetype fonts")
+  local path
+  if context and resolvers and resolvers.findfile then   -- ConTeXt, where kpse is switched off
+    path = resolvers.findfile(file, "otf")
+    if not path or path == "" then path = resolvers.findfile(file, "ttf") end
+    if path == "" then path = nil end
+  else
+    path = kpse.find_file(file, "opentype fonts") or kpse.find_file(file, "truetype fonts")
+  end
   if not path then return nil, "font not found: " .. file end
   local ok, shapes = pcall(fonts.handlers.otf.readers.loadshapes, path)
   if not ok or type(shapes) ~= "table" then

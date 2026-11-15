@@ -16,7 +16,10 @@ local PARTS = { "ink", "flora", "grow", "authored", "figures", "theme-geometric"
   "pgfmath", "native" }
 
 local function where(file, format, module)     -- " (path)" for the message, if it can be found
-  local ok, path = pcall(function() return kpse.find_file(file, format) end)
+  local ok, path = pcall(function()
+    if context and resolvers then return resolvers.findfile(file) end   -- ConTeXt: no kpse
+    return kpse.find_file(file, format)
+  end)
   if not (ok and path) and module and package.searchpath then path = package.searchpath(module, package.path) end
   return path and (" (" .. path .. ")") or ""
 end
@@ -137,7 +140,7 @@ local function guarded(fn)
 end
 
 -- the current pgf transformation (TikZ scopes) as an ink transform: local cm -> page bp
-local function sync_transform()
+function M.sync_transform()
   local C = ink.CM
   local bp = 72 / 72.27 / 65536
   ink.set_transform({
@@ -167,7 +170,7 @@ function M.draw(name, s, o)
   local F = primitives()
   local fn = F[name]
   if type(fn) ~= "function" then tex.error("florilegium: unknown primitive '" .. tostring(name) .. "'") return end
-  sync_transform()
+  M.sync_transform()
   local rng = page_rng.fork()
   if name == "ghost" then
     F.ghost(o and o.lift, function() M.draw_inner(s, o, rng) end)
@@ -276,7 +279,7 @@ function M.mark(kind, arg)
 end
 
 local HLIST, VLIST, GLUE, KERN, RULE, WHATSIT = node.id("hlist"), node.id("vlist"), node.id("glue"), node.id("kern"), node.id("rule"), node.id("whatsit")
-local USER = node.subtype("user_defined")
+local USER = node.subtype and node.subtype("user_defined")   -- nil in LuaMetaTeX (ConTeXt), which has its own walk
 -- walk a box list; y grows downward from the top of the outer box, x rightward
 local function walk(head, parent, x, y, vertical, out)
   for n in node.traverse(head) do
@@ -307,7 +310,7 @@ local function walk(head, parent, x, y, vertical, out)
   end
 end
 -- the marks on the page being shipped out, in page cm from the lower-left corner
-local function page_marks(box)
+function M.page_marks(box)
   local b = box and tex.box[box]
   if not b then return {} end
   local out = {}
@@ -362,7 +365,7 @@ function M.frame(k, n, explain) frame = { k = k, n = n, explain = explain == "ex
 -- of the text centered there). Small ones in 5.5 pt, others in 6.5 pt or, with
 -- `scale`, 10 pt scaled; `rotate` (degrees), `color` ({r, g, b}), `opacity`. On a
 -- mirrored page east and west trade places and rotations turn the other way.
-local function captions(g, list, shown)
+function M.captions(g, list, shown)
   if not list or #list == 0 then return end
   local c = ink.tone(0.12)
   local out = { string.format("\\definecolor{flocaption}{rgb}{%.3f,%.3f,%.3f}", c[1], c[2], c[3]) }
@@ -409,7 +412,7 @@ local function grown_frame(g)
     local p = (t - e.t0) / e.dur
     return p >= tag[2] and (tag[3] == nil or p < tag[3])
   end)
-  captions(g, r.captions, function(cap) return t >= cap.event.t0 + cap.event.dur end)
+  M.captions(g, r.captions, function(cap) return t >= cap.event.t0 + cap.event.dur end)
 end
 
 -- the theme (option theme=...): nil is flora; otherwise florilegium-theme-<name>.lua replaces
@@ -448,7 +451,7 @@ M.visitors = true
 M.bleed = 0
 function M.grown(seed, spill, spilly, box)
   local g = M.geometry()
-  g.marks = themes(page_marks(box))
+  g.marks = themes(M.page_marks(box))
   g.seed, g.spill, g.spilly, g.visitors, g.age, g.theme = seed, spill, spilly, M.visitors, M.age, usable_theme()
   g.docseed = M.docseed
   if M.bleed > 0 then g.bleed = M.bleed end
@@ -459,7 +462,7 @@ function M.grown(seed, spill, spilly, box)
   else
     local r = require("florilegium-grow").page(g)
     M.last_captions, M.last_stats = r and r.captions, r and r.stats
-    captions(g, r and r.captions)
+    M.captions(g, r and r.captions)
   end
   M.head(g)
   ink.set_pale(old)
@@ -469,14 +472,14 @@ M.grown = guarded(M.grown)
 -- the authored composition for this page (intensity applies; density does not,
 -- everything here is placed by hand)
 function M.authored(seed, box)
-  themes(page_marks(box))
+  themes(M.page_marks(box))
   local g = M.geometry()
   g.seed, g.visitors, g.theme = seed, M.visitors, usable_theme()
   if M.bleed > 0 then g.bleed = M.bleed end
   local old = ink.set_pale(pale())
   local r = require("florilegium-authored").page(g)
   M.last_captions, M.last_stats = r and r.captions, r and r.stats
-  captions(g, r and r.captions)
+  M.captions(g, r and r.captions)
   M.head(g)
   ink.set_pale(old)
 end
