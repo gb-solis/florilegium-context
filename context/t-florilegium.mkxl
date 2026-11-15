@@ -216,7 +216,7 @@
      {\ctxlua{thirddata.florilegium.ctx_page {
         paperwidth = \number\paperwidth, paperheight = \number\paperheight,
         textleft = \number\texthoffset, makeupwidth = \number\makeupwidth,
-        topspace = \number\topspace, topheight = \number\topheight, topdistance = \number\topdistance,
+        topspace = \number\topspace,
         headerheight = \number\headerheight, headerdistance = \number\headerdistance,
         textheight = \number\textheight,
         footerdistance = \number\footerdistance, footerheight = \number\footerheight,

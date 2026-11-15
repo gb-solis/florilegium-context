@@ -59,7 +59,8 @@ end
 -- The layout of the page being shipped out, passed by \florilegium_page as scaled
 -- points: the text block's left edge (\texthoffset, which is \backspace or, on a
 -- left-hand page of a double-sided document, \paperwidth - \backspace - \makeupwidth),
--- and the vertical stack \topspace, top, header, text, footer. The same g as
+-- and the vertical stack \topspace, header, text, footer (the top area lies inside
+-- \topspace, so it does not move the header). The same g as
 -- florilegium.geometry() makes from LaTeX's lengths, so the growth code is unchanged.
 M.layout = nil
 function M.geometry()
@@ -71,8 +72,8 @@ function M.geometry()
     g.mirror = true
     g.textleft, g.textright = g.pw - g.textright, g.pw - g.textleft
   end
-  -- the top of the text area, below the top area, the header and its distance
-  g.ytop = g.ph - cm("topspace") - cm("topheight") - cm("topdistance") - cm("headerheight") - cm("headerdistance")
+  -- the top of the text area, below the header and its distance
+  g.ytop = g.ph - cm("topspace") - cm("headerheight") - cm("headerdistance")
   g.ybot = g.ytop - cm("textheight")
   g.colright = g.textleft - 0.4
   -- LaTeX's head rule hangs 1 mm under the header's baseline, and its footer stem
