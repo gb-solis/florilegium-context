@@ -41,6 +41,44 @@ releases stops with a message saying so.
 Without installing, a document can name the two folders of a checkout:
 `context --path=/path/to/florilegium-context,/path/to/florilegium-context/context doc.tex`.
 
+## Quick start
+
+The garden needs two things from the document: the grown composition, and a side margin
+wide enough to grow in. A complete document:
+
+```tex
+\setuppapersize[A4]
+\setuplayout[backspace=68mm,width=120mm]   % a 68 mm margin on the left, 22 mm on the right
+
+\usemodule[florilegium][composition=grown]
+
+\starttext
+\input tufte
+\florilegiumtextend   % the garden also fills the page below the last line
+\stoptext
+```
+
+- **Ask for `composition=grown`.** Without it the module draws the authored composition,
+  which is placed by hand for A4 with a 68 mm left margin and fits no other page: on
+  anything else it runs under the text, and the log says so.
+- **Leave a wide margin.** The garden grows in the wider of the two side margins and does
+  not move the text. About a third of the paper's width works well: `backspace=68mm,width=120mm`
+  on A4, `backspace=45mm,width=88mm` on A5. With `width=middle` the two margins are equal and
+  the garden has only that narrow strip. For the margin on the right, make the right one the
+  wider (`backspace=22mm,width=120mm` on A4).
+- **Two-sided documents** get the garden in the outer margin of every page when the layout
+  has it there: `\setuppagenumbering[alternative=doublesided]` and
+  `\setuplayout[backspace=22mm,width=120mm]` on A4.
+- **Grown only:** `\florilegiumtextend`, `\florilegiumbloom`, `\florilegiumframe`, and the keys
+  `sections`, `aging` and `density` do nothing in the authored composition.
+- **The header and footer** get the garden's own rule and stem, so the examples switch
+  ConTeXt's page number off (`\setuppagenumbering[location=]`) and put it in the footer text.
+- The space that `\florilegiumtextend` hands to the garden starts under the last line of the
+  text; footnotes at the foot of that page are not kept clear.
+
+Lines from the module in the log start with `florilegium`; its warnings are worth reading
+when a page looks wrong.
+
 ## Usage
 
 ```tex
@@ -148,8 +186,7 @@ blank.
 
 - The TikZ library of florilegium 2.0 (`\usetikzlibrary{florilegium}`) has no counterpart here.
 - The numbers given to `\florilegiumage`, `density`, `intensity`, `seed` and an ornament's
-  `angle` are not checked as the LaTeX package checks them, and the drawing code's warnings
-  (a `\florilegiumbloom` that names no motif, for one) do not reach the log.
+  `angle` are not checked as the LaTeX package checks them.
 - `sections=yes` sets the `deeptextcommand` of `section` and `subsection`, in place of one
   the document may have set.
 - A page without a single glyph on it (a full-page figure and no header or page number) is
