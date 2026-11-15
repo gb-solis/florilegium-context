@@ -8,7 +8,8 @@
 \environment env-florilegium
 
 \doifsomething{\getdocumentargument{galleryink}}
-  {\definecolor[ink][h=\getdocumentargument{galleryink}]}
+  {\definecolor[galleryink][h=\getdocumentargument{galleryink}]%
+   \setupflorilegium[inkcolor=galleryink]}
 \doifsomething{\getdocumentargument{gallerytheme}}
   {\setupflorilegium[theme=\getdocumentargument{gallerytheme}]}
 \doifsomething{\getdocumentargument{galleryoptions}}

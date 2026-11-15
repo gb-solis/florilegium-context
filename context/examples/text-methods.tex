@@ -21,12 +21,12 @@ means here: no flower is grown from a grammar, but no two petals share a shape.
 There is one document color, \code{ink}, and from it a ramp $t\mapsto\mfunction{tone}(t)$
 from the darkest navy at $t=0$ to a pale mist at $t=1$. The ramp is interpolated in
 OKLCH between six stops whose lightness runs from $0.25$ to $0.92$ and whose chroma peaks
-at $0.175$ for the cobalt at $t=0.38$; the hue is that of \code{ink}, drifting $6^\circ$
+at $0.175$ for the cobalt at $t=0.38$; the hue is that of the ink color (\code{inkcolor}), drifting $6^\circ$
 toward violet in the darks and $8^\circ$ toward cyan in the lights, as ultramarine does when
-it is thinned with water, and the chroma scales with that of \code{ink}. Mixing the
-document color with white, as \type{\definespotcolor[...][ink][p=.22]} would, desaturates
+it is thinned with water, and the chroma scales with that of the ink color. Mixing the
+document color with white, as \type{\definespotcolor[...][...][p=.22]} would, desaturates
 toward gray instead; the perceptual ramp keeps the light end blue. A second color,
-\code{accent}, is a copper used only for hairlines.
+\code{accentcolor}, is a copper used only for hairlines.
 \stopconstruction
 
 \startconstruction[title={Petal}]

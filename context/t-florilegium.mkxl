@@ -50,8 +50,9 @@
 %C      theme=,              % geometric | math | any florilegium-theme-<name>.lua
 %C      density=1,           % 0.05 .. 1
 %C      intensity=1,         % 0.3 .. 1
-%C      seed=]               % a fixed seed instead of the page number
-%C   \definecolor[ink][h=5B2A1F]   \definecolor[accent][h=B4662F]
+%C      seed=,               % a fixed seed instead of the page number
+%C      inkcolor=,           % a color's name: the hue of the whole palette
+%C      accentcolor=]        % a color's name: the copper of the hairlines
 %C
 %C   \florilegiumbloom[motif]  \florilegiumage{0.8}  \florilegiumtheme{geometric}
 %C   \florilegiuminitial[5]{E}very ...  \florilegiuminitialfont{lmroman10-bold.otf}
@@ -116,7 +117,9 @@
    theme=,
    density=1,
    intensity=1,
-   seed=]
+   seed=,
+   inkcolor=florilegium:ink,
+   accentcolor=florilegium:accent]
 
 \def\florilegium_apply
   {\ctxlua{
@@ -126,6 +129,8 @@
      thirddata.florilegium.density = tonumber("\florilegiumparameter{density}") or 1
      thirddata.florilegium.intensity = tonumber("\florilegiumparameter{intensity}") or 1
      thirddata.florilegium.fixedseed = tonumber("\florilegiumparameter{seed}")
+     thirddata.florilegium.inkcolor = "\florilegiumparameter{inkcolor}"
+     thirddata.florilegium.accentcolor = "\florilegiumparameter{accentcolor}"
    }%
    \edef\p_florilegium_theme{\florilegiumparameter{theme}}%
    \ifempty\p_florilegium_theme\else
@@ -147,7 +152,9 @@
    theme=\moduleparameter{florilegium}{theme},
    density=\moduleparameter{florilegium}{density},
    intensity=\moduleparameter{florilegium}{intensity},
-   seed=\moduleparameter{florilegium}{seed}]
+   seed=\moduleparameter{florilegium}{seed},
+   inkcolor=\moduleparameter{florilegium}{inkcolor},
+   accentcolor=\moduleparameter{florilegium}{accentcolor}]
 
 \doifsomething{\getdocumentargument{florilegiumseed}}
   {\setupflorilegium[seed=\getdocumentargument{florilegiumseed}]}
@@ -165,15 +172,23 @@
 \florilegium_default{aging}{no}
 \florilegium_default{density}{1}
 \florilegium_default{intensity}{1}
+\florilegium_default{inkcolor}{florilegium:ink}
+\florilegium_default{accentcolor}{florilegium:accent}
 \florilegium_apply
 
-%D The palette: \type{ink} gives the hue and saturation of the whole ramp (computed
-%D in OKLCH by florilegium-ink.lua), \type{accent} the copper of the hairlines.
+%D The palette: the color that \type{inkcolor} names gives the hue and saturation of
+%D the whole ramp (computed in OKLCH by florilegium-ink.lua), the one that
+%D \type{accentcolor} names the copper of the hairlines. The LaTeX package calls its
+%D colors \type{ink} and \type{accent}; here \type{\definecolor[accent]} would also
+%D define a command \type{\accent}, over the one that \CONTEXT\ has, so the module's
+%D own colors have a prefix and are defined without commands.
 
-\definecolor[ink]   [h=2456C4]
-\definecolor[accent][h=B4662F]
-\definecolor[florilegium:label][s=.5] % xcolor's gray, for \florilegiumlabel
-\definecolor[florilegium:hidden][a=1,t=0] % t is the opacity
+\startprotectedcolors
+  \definecolor[florilegium:ink]   [h=2456C4]
+  \definecolor[florilegium:accent][h=B4662F]
+  \definecolor[florilegium:label] [s=.5] % xcolor's gray, for \florilegiumlabel
+  \definecolor[florilegium:hidden][a=1,t=0] % t is the opacity
+\stopprotectedcolors
 
 %D Marks in the text: a whatsit that the page's background finds in the page box
 %D when the page is shipped out, so the garden knows the height of the line.

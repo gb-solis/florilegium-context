@@ -37,7 +37,8 @@ ink.backend = {
 }
 
 -- ---------------------------------------------------------------- colors
--- `ink` and `accent` are ordinary ConTeXt colors (\definecolor[ink][h=2456C4])
+-- M.inkcolor and M.accentcolor name ordinary ConTeXt colors (\setupflorilegium[inkcolor=darkred])
+M.inkcolor, M.accentcolor = "florilegium:ink", "florilegium:accent"
 local function rgb(name)
   local ok, c = pcall(attributes.colors.spec, name)
   if not ok or not c then return nil end
@@ -48,8 +49,8 @@ local function rgb(name)
   return c.r, c.g, c.b
 end
 function M.ctx_colors()
-  local ir, ig, ib = rgb("ink")
-  local ar, ag, ab = rgb("accent")
+  local ir, ig, ib = rgb(M.inkcolor)
+  local ar, ag, ab = rgb(M.accentcolor)
   if not ir then ir, ig, ib = 0x24 / 255, 0x56 / 255, 0xC4 / 255 end
   if not ar then ar, ag, ab = 0.71, 0.40, 0.18 end
   M.colors(ir, ig, ib, ar, ag, ab)
