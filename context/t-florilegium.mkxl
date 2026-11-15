@@ -3,10 +3,17 @@
 %D      version=2.0.1,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=florilegium: a procedurally generated floral page margin,
-%D       author=Kevin Raymond,
-%D         date=2026-11-03,
+%D       author={Kevin Raymond (florilegium), Luis Montgomery (\CONTEXT\ port), Gabriel Solis (this fork)},
+%D         date=2026-11-15,
 %D    copyright=Kevin Raymond,
 %D      license=MIT]
+%C
+%C florilegium and its drawing code (florilegium.lua, florilegium-*.lua) are by Kevin
+%C Raymond: https://github.com/kevinraymond/florilegium. This module and its Lua half
+%C come from the ConTeXt port of florilegium 1.3 that Luis Montgomery published at
+%C https://github.com/montylucho/florilegium. They were moved to florilegium 2.0.1 and
+%C are maintained by Gabriel Solis at https://github.com/gb-solis/florilegium-context,
+%C whose history lists what changed since.
 %C
 %C MIT License
 %C

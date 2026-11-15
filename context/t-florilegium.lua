@@ -4,6 +4,9 @@
 -- same Lua as under LuaLaTeX (florilegium.lua and florilegium-*.lua, installed beside
 -- this file), untouched. Everything is reached as thirddata.florilegium.
 -- Copyright (c) 2026 Kevin Raymond. MIT License: see LICENSE or florilegium.sty.
+-- From the ConTeXt port of florilegium 1.3 published by Luis Montgomery
+-- (https://github.com/montylucho/florilegium); moved to florilegium 2.0.1 and maintained
+-- by Gabriel Solis (https://github.com/gb-solis/florilegium-context).
 
 local M = {}
 M.version = "2.0.1"                -- the release; it must be florilegium.lua's, checked below
