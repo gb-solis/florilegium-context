@@ -288,10 +288,21 @@
 
 %D Started at \type{\starttext}: the margin and the flowers at the headings.
 
+%D The garden is added to the page's backgrounds, after (so on top of) the ones the
+%D document has set.
+
+\def\florilegium_add_background
+  {\edef\m_florilegium_background{\namedframedparameter{\??layoutbackgrounds\v!page}\c!background}%
+   \ifempty\m_florilegium_background
+     \setupbackgrounds[\v!page][\c!background=florilegium]%
+   \else
+     \normalexpanded{\setupbackgrounds[\v!page][\c!background={\m_florilegium_background,florilegium}]}%
+   \fi}
+
 \def\florilegium_start
   {\global\settrue\c_florilegium_started
    \doif{\florilegiumparameter{margin}}\v!yes
-     {\setupbackgrounds[\v!page][\c!background=florilegium]}%
+     {\florilegium_add_background}%
    \doif{\florilegiumparameter{sections}}\v!yes
      {\setuphead[\v!section]   [\c!deeptextcommand=\florilegium_head_text{1}]%
       \setuphead[\v!subsection][\c!deeptextcommand=\florilegium_head_text{2}]}}
