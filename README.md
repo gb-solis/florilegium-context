@@ -1,5 +1,9 @@
 # florilegium
 
+> **This branch is a fork for ConTeXt.** It adds a ConTeXt LMTX module to florilegium 2.0.1:
+> see [context/README.md](context/README.md). What follows is the README of the original,
+> [kevinraymond/florilegium](https://github.com/kevinraymond/florilegium).
+
 [![build](https://github.com/kevinraymond/florilegium/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/kevinraymond/florilegium/actions/workflows/build.yml)
 [![playground](https://github.com/kevinraymond/florilegium/actions/workflows/pages.yml/badge.svg?branch=main)](https://kevinraymond.github.io/florilegium/)
 [![release](https://img.shields.io/github/v/release/kevinraymond/florilegium?color=2456c4)](https://github.com/kevinraymond/florilegium/releases/latest)
