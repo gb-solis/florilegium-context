@@ -1,0 +1,32 @@
+%% text-sharing.tex -- shared closing section (ConTeXt)
+\subsubsection{Building and sharing}
+
+In \CONTEXT\ the package is the module \code{t-florilegium}: the file
+\code{t-florilegium.mkxl} with its Lua half, \code{t-florilegium.lua}, and nine Lua files
+beside them that are the same files the \LATEX\ package uses, unchanged. The Lua half is the
+glue to \CONTEXT; it takes the place of the \LATEX\ glue in \code{florilegium.lua} and
+borrows the rest of that file. The names of the others begin with \code{florilegium-},
+because \TeX\ finds a file by its bare name, the document's folder first, and a generic
+name would lose to a file of the author's own. After the prefix come \code{ink} (geometry,
+color and PDF output), \code{flora} (the primitives), \code{authored} and \code{grow} (the
+two compositions), \code{initial} (the decorated initials), and two themes with the figures
+one of them draws from (\code{theme-geometric}, the same plant cut from flat shapes;
+\code{theme-math}, figures, symbols and equations cascading down the margin;
+\code{figures}). The module comes as one zip in the layout of a \TEX\ tree, the files in
+\code{tex/context/third/florilegium} and this text with the other examples in
+\code{doc/context/third/florilegium}: unzipped into a tree that \CONTEXT\ searches, it lets
+any document load the garden with \type{\usemodule[florilegium]} and choose its own seed,
+column and hue, in one run of \type{context} at about a second per page. In the repository
+the drawing code is kept once, beside the \LATEX\ package, and a continuous integration job
+puts the module together and compiles these pages on every push.
+
+\startremark
+Three things are worth recording about the port. A literal written into the page bypasses
+\CONTEXT's own transformations, so a primitive drawn with \type{\florilegiumdraw} is given
+its position and angle as numbers and applies them in Lua. The garden is the page's
+background overlay, which \CONTEXT\ builds when the page body, its header and its footer
+are already in \type{\pagebox}: walking that box finds the marks the text left, in the
+same run. And text that a theme sets in the margin at an angle is turned inside a form
+XObject of its own: rotated text in the page's own stream made the backend lose its place,
+and the rest of the page's text vanished.
+\stopremark

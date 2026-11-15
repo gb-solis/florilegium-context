@@ -1,0 +1,31 @@
+%% animation.tex -- the growth of one garden, one page per frame (ConTeXt).
+%%   context --florilegiumseed=7 --animframes=260 animation.tex
+%% Optional: --animfrom=.. --animto=.. for a range of frames (parallel jobs),
+%% --animexplain=explain to mark the free disc that each branch grows to.
+\usemodule[florilegium][composition=grown]
+\environment env-florilegium
+\setupfootertexts[][]
+
+\edef\animframes {\getdocumentargument{animframes}}  \ifempty\animframes \def\animframes{260}\fi
+\edef\animfrom   {\getdocumentargument{animfrom}}    \ifempty\animfrom   \def\animfrom{1}\fi
+\edef\animto     {\getdocumentargument{animto}}      \ifempty\animto     \let\animto\animframes\fi
+\edef\animexplain{\getdocumentargument{animexplain}}
+
+\starttext
+\dostepwiserecurse{\animfrom}{\animto}{1}{%
+  % every frame is the same page: same number, same text, same seed
+  \setuppagenumber[number=1]%
+  \florilegiumframe[\animexplain]{#1}{\animframes}%
+  \startatsection{3}{2}%
+  \subsection{Watch it grow}
+
+  This garden grows from seed {\tt\doifelsenothing{\getdocumentargument{florilegiumseed}}{page}{\getdocumentargument{florilegiumseed}}}.
+  Three stems rise from a root in the corner, leaves open at their nodes as the tips pass,
+  and each stem ends in a flower. Then a greedy loop takes over: it finds the largest
+  circle of free space within reach of a stem\ifempty\animexplain\else{} (dashed)\fi,
+  chooses a motif that fits it, and grows a branch to it from the nearest stem point. Big
+  holes come first, so flowers and lilies land early; the last small gaps get leaflets,
+  buds and florets. The final frame is exactly the page that this seed always gives.
+  \florilegiumtextend
+  \page}
+\stoptext

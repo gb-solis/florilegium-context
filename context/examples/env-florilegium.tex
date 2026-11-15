@@ -1,0 +1,96 @@
+%% env-florilegium.tex -- the look of the ConTeXt demo documents: the page of the LaTeX
+%% ones (A4, 11 pt Latin Modern, a 68 mm left margin for the garden, the header's
+%% words and the page number on the right, no rule: the garden draws its own),
+%% headings numbered like LaTeX's article class, and the theorem-like blocks of
+%% amsthm. Loaded with \environment env-florilegium.
+
+\startenvironment env-florilegium
+
+\setuppapersize[A4]
+\setupbodyfont[modern,11pt]
+
+% LaTeX's geometry: left=68mm, right=22mm, top=32mm, bottom=30mm, headsep=8mm,
+% with article's 12 pt header and 30 pt from the text to the footer's baseline
+\setuplayout
+  [backspace=68mm,
+   width=120mm,
+   % the header's text is centered on a strut in its 12 pt; LaTeX's sits on the bottom
+   % of its box, 8 mm above the text: the same baseline, with ytop unchanged
+   topspace=\dimexpr32mm-12pt-8mm+(12pt-\strutht+\strutdp)/2\relax,
+   header=12pt,
+   headerdistance=\dimexpr8mm-(12pt-\strutht+\strutdp)/2\relax,
+   % and the footer's baseline 30 pt below the text, as article's \footskip
+   height=\dimexpr12pt+8mm-(12pt-\strutht+\strutdp)/2+235mm+30pt-(12pt+\strutht-\strutdp)/2+12pt\relax,
+   footer=12pt,
+   footerdistance=\dimexpr30pt-(12pt+\strutht-\strutdp)/2\relax,
+   leftmargin=0pt,
+   leftmargindistance=0pt,
+   rightmargin=0pt,
+   rightmargindistance=0pt]
+
+\setuppagenumbering[location=]
+\setupheader[style=\tfx]
+\setupfooter[style=\tfx]
+\setupheadertexts[][{\sc 3\quad Procedural ornament}]
+\setupfootertexts[][pagenumber]
+
+\setupwhitespace[none]
+\setupindenting[yes,medium,next]
+\setupalign[hz,hanging]
+\setuptolerance[verytolerant]
+
+% headings: section 3, subsection 3.2, subsubsection 3.2.1, as article's
+\setuphead[section]      [style=\tfb\bf, sectionsegments=section:subsubsection,
+                          before={\blank[big]}, after={\blank[medium]}]
+\setuphead[subsection]   [style=\tfa\bf, sectionsegments=section:subsubsection,
+                          before={\blank[big]}, after={\blank[medium]}]
+\setuphead[subsubsection][style=\tf\bf,  sectionsegments=section:subsubsection,
+                          before={\blank[medium]}, after={\blank[small]}]
+
+% LaTeX's \setcounter{section}{3}: ConTeXt numbers a subsection after a section
+% that was actually started, so the text opens one, without placing its title
+\definehead[florilegiumhiddensection][section][placehead=hidden]
+\def\startatsection#1#2% section number, subsection number
+  {\setupheadnumber[section][\the\numexpr#1-1\relax]%
+   \florilegiumhiddensection{}%
+   \setupheadnumber[subsection][#2]}
+
+% amsthm: one counter for all, numbered within the section; "plain" blocks
+% (propositions) in italics, "definition" blocks upright
+\defineenumeration
+  [proposition]
+  [text=Proposition,
+   alternative=serried,
+   width=fit,
+   distance=.5em,
+   headstyle=bold,
+   style=italic,
+   title=yes,
+   titlestyle=normal,
+   titleleft=(,
+   titleright=),
+   titledistance=.25em,
+   stopper=.,
+   prefix=yes,
+   prefixsegments=section,
+   way=bysection,
+   before={\blank[medium]},
+   after={\blank[medium]}]
+
+\defineenumeration[definition]  [proposition][text=Definition,  style=normal, counter=proposition]
+\defineenumeration[construction][proposition][text=Construction,style=normal, counter=proposition]
+\defineenumeration[remark]      [proposition][text=Remark,      style=normal, counter=proposition]
+\defineenumeration[exercise]    [proposition][text=Exercise,    style=normal, counter=proposition]
+
+% a proof, closed by a square
+\tolerant\def\startproof[#1]%
+  {\blank[medium]\dontleavehmode
+   {\it \ifparameter#1\or#1\else Proof\fi.}\enspace\ignorespaces}
+\def\stopproof
+  {\unskip\nobreak\hfill\quad$\square$\par\blank[medium]}
+
+% code in the text, as \texttt{\small ...}
+\definetype[code][style=\ttx]
+\setuptype[style=\ttx]
+
+\stopenvironment

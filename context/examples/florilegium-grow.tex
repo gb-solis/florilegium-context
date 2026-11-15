@@ -1,0 +1,13 @@
+%% florilegium-grow.tex -- the grown composition (ConTeXt). One run:
+%%   context florilegium-grow.tex
+%% The layout is computed by florilegium-grow.lua and drawn by florilegium-flora.lua and
+%% florilegium-ink.lua through t-florilegium.mkxl; the body text describes all three.
+\usemodule[florilegium][composition=grown]
+\environment env-florilegium
+
+\starttext
+\input text-methods
+\input text-growth
+\input text-sharing
+\florilegiumtextend
+\stoptext

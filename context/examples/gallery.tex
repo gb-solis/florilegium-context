@@ -1,0 +1,32 @@
+%% gallery.tex -- one page, one seed (ConTeXt). One short page per variant, as the
+%% LaTeX gallery.tex:
+%%   context --florilegiumseed=7 gallery.tex
+%% Optional: --galleryink=5B2A1F (the ink, hex), --galleryage=0.8 (the season),
+%% --gallerytheme=math (the theme), --galleryoptions=density=0.4 (any setup keys).
+
+\usemodule[florilegium][composition=grown]
+\environment env-florilegium
+
+\doifsomething{\getdocumentargument{galleryink}}
+  {\definecolor[ink][h=\getdocumentargument{galleryink}]}
+\doifsomething{\getdocumentargument{gallerytheme}}
+  {\setupflorilegium[theme=\getdocumentargument{gallerytheme}]}
+\doifsomething{\getdocumentargument{galleryoptions}}
+  {\expanded{\setupflorilegium[\getdocumentargument{galleryoptions}]}}
+\setupfootertexts[][]
+
+\starttext
+\doifsomething{\getdocumentargument{galleryage}}
+  {\florilegiumage{\getdocumentargument{galleryage}}}
+\startatsection{3}{1}
+\subsection{One seed, one garden}
+
+This page was grown from seed {\tt \doifelsenothing{\getdocumentargument{florilegiumseed}}{page}{\getdocumentargument{florilegiumseed}}}.
+Nothing in the margin was placed by hand: three stems rise from a root in the corner and
+sway up the column, leaves hang at their nodes, and a greedy loop then finds the largest
+remaining hole, chooses a motif that fits it and grows a branch to it from the nearest
+stem, until only small gaps are left. The same seed always gives the same garden; a
+different seed gives a different one. Because the text on this page ends early, the
+garden also grows into the space below these lines.
+\florilegiumtextend
+\stoptext

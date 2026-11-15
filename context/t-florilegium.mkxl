@@ -1,0 +1,394 @@
+%D \module
+%D   [     file=t-florilegium,
+%D      version=2.0.1,
+%D        title=\CONTEXT\ User Module,
+%D     subtitle=florilegium: a procedurally generated floral page margin,
+%D       author=Kevin Raymond,
+%D         date=2026-11-03,
+%D    copyright=Kevin Raymond,
+%D      license=MIT]
+%C
+%C MIT License
+%C
+%C Copyright (c) 2026 Kevin Raymond
+%C
+%C Permission is hereby granted, free of charge, to any person obtaining a copy
+%C of this software and associated documentation files (the "Software"), to deal
+%C in the Software without restriction, including without limitation the rights
+%C to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+%C copies of the Software, and to permit persons to whom the Software is
+%C furnished to do so, subject to the following conditions:
+%C
+%C The above copyright notice and this permission notice shall be included in all
+%C copies or substantial portions of the Software.
+%C
+%C THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+%C IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+%C FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+%C AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+%C LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+%C OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+%C SOFTWARE.
+%C
+%C The ConTeXt (LMTX) version of florilegium.sty. Installed as a module, in
+%C tex/context/third/florilegium: this file, t-florilegium.lua and the drawing code
+%C shared with the LaTeX package (florilegium.lua and florilegium-*.lua, the same files).
+%C t-florilegium.lua replaces the LaTeX glue (geometry from the ConTeXt layout, marks in
+%C \type{\pagebox}, captions as ConTeXt boxes, the PDF literal and graphics states
+%C through the ConTeXt backend). Documentation and examples: doc/context/third/florilegium.
+%C
+%C Usage
+%C
+%C   \usemodule[florilegium]                         authored composition
+%C   \usemodule[florilegium][composition=grown]      grown to fit the page
+%C   \setupflorilegium
+%C     [composition=grown,   % authored | grown
+%C      margin=yes,          % no: no margin, only \florilegiumdraw and ornaments
+%C      visitors=yes,        % no: no butterflies, bees, snails or birds
+%C      sections=no,         % yes: a flower beside every \section and \subsection
+%C      aging=no,            % yes: spring on the first page, autumn on the last
+%C      theme=,              % geometric | math | any florilegium-theme-<name>.lua
+%C      density=1,           % 0.05 .. 1
+%C      intensity=1,         % 0.3 .. 1
+%C      seed=]               % a fixed seed instead of the page number
+%C   \definecolor[ink][h=5B2A1F]   \definecolor[accent][h=B4662F]
+%C
+%C   \florilegiumbloom[motif]  \florilegiumage{0.8}  \florilegiumtheme{geometric}
+%C   \florilegiuminitial[5]{E}very ...  \florilegiuminitialfont{lmroman10-bold.otf}
+%C   \florilegiumtextend  \florilegiumframe[explain]{k}{n}
+%C   \florilegiumornament[size=1.5em,ink=5B2A1F,angle=10,seed=random]{leaf}
+%C   \startflorilegiumpicture[width=19cm,height=27.5cm,frame=yes]
+%C     \florilegiumdraw[x=3.2,y=24,rotate=-15]{flower}{1.9}
+%C     \florilegiumlabel[x=3.2,y=21.3]{flower}
+%C     \florilegiumline{15.4}{1.45}{18.6}{1.6}
+%C   \stopflorilegiumpicture
+%C
+%C A fixed seed from the command line: context --florilegiumseed=7 doc.tex
+
+\startmodule[florilegium]
+
+\unprotect
+
+%D The Lua half, and the drawing code it requires, are found beside this file: in the
+%D module's folder of a TeX tree, or in the folder \type{--path} names.
+
+\startluacode
+  local here = status.filename or ""
+  if not here:find("t%-florilegium") then here = resolvers.findfile("t-florilegium.mkxl") or "" end
+  local dir = file.dirname(here)
+  if dir == "" then dir = "." end
+  package.path = dir .. "/?.lua;" .. package.path
+  local lua = dir .. "/t-florilegium.lua"
+  if not lfs.isfile(lua) then lua = resolvers.findfile("t-florilegium.lua") end
+  if not lua or lua == "" then
+    logs.report("florilegium", "t-florilegium.lua is missing: install the whole module")
+  else
+    dofile(lua)
+  end
+\stopluacode
+
+%D The theme: in the preamble for the whole document; in the text a mark, so that the
+%D theme changes from the page that the mark is on (florilegium.lua).
+
+\newconditional\c_florilegium_started
+
+\permanent\protected\def\florilegiumtheme#1%
+  {\ifconditional\c_florilegium_started
+     \ctxlua{thirddata.florilegium.mark("theme", "\luaescapestring{#1}" == "flora" and "" or "\luaescapestring{#1}")}%
+   \else
+     \ctxlua{thirddata.florilegium.theme = ("\luaescapestring{#1}" \string~= "" and "\luaescapestring{#1}" \string~= "flora") and "\luaescapestring{#1}" or nil}%
+   \fi}
+
+%D Settings. Everything but the composition, the margin and the sections takes
+%D effect at once; those three are read at \type{\starttext}.
+
+\installnamespace{florilegium}
+
+\installsetuponlycommandhandler \????florilegium {florilegium}
+
+\setupflorilegium
+  [\c!alternative=,
+   composition=authored,
+   margin=\v!yes,
+   visitors=\v!yes,
+   sections=\v!no,
+   aging=\v!no,
+   theme=,
+   density=1,
+   intensity=1,
+   seed=]
+
+\def\florilegium_apply
+  {\ctxlua{
+     thirddata.florilegium.composition = "\florilegiumparameter{composition}"
+     thirddata.florilegium.visitors = "\florilegiumparameter{visitors}" \string~= "no"
+     thirddata.florilegium.aging = "\florilegiumparameter{aging}" == "yes"
+     thirddata.florilegium.density = tonumber("\florilegiumparameter{density}") or 1
+     thirddata.florilegium.intensity = tonumber("\florilegiumparameter{intensity}") or 1
+     thirddata.florilegium.fixedseed = tonumber("\florilegiumparameter{seed}")
+   }%
+   \edef\p_florilegium_theme{\florilegiumparameter{theme}}%
+   \ifempty\p_florilegium_theme\else
+     \florilegiumtheme{\p_florilegium_theme}%
+     \letflorilegiumparameter{theme}\empty
+   \fi}
+
+\appendtoks \florilegium_apply \to \everysetupflorilegium
+
+%D The parameters of \type{\usemodule[florilegium][...]}, and a seed given on the
+%D command line (\type{--florilegiumseed=7}).
+
+\setupflorilegium
+  [composition=\moduleparameter{florilegium}{composition},
+   margin=\moduleparameter{florilegium}{margin},
+   visitors=\moduleparameter{florilegium}{visitors},
+   sections=\moduleparameter{florilegium}{sections},
+   aging=\moduleparameter{florilegium}{aging},
+   theme=\moduleparameter{florilegium}{theme},
+   density=\moduleparameter{florilegium}{density},
+   intensity=\moduleparameter{florilegium}{intensity},
+   seed=\moduleparameter{florilegium}{seed}]
+
+\doifsomething{\getdocumentargument{florilegiumseed}}
+  {\setupflorilegium[seed=\getdocumentargument{florilegiumseed}]}
+
+%D Module parameters that were not given are empty: back to the defaults.
+
+\def\florilegium_default#1#2%
+  {\edef\p_florilegium_value{\florilegiumparameter{#1}}%
+   \ifempty\p_florilegium_value\setflorilegiumparameter{#1}{#2}\fi}
+
+\florilegium_default{composition}{authored}
+\florilegium_default{margin}{yes}
+\florilegium_default{visitors}{yes}
+\florilegium_default{sections}{no}
+\florilegium_default{aging}{no}
+\florilegium_default{density}{1}
+\florilegium_default{intensity}{1}
+\florilegium_apply
+
+%D The palette: \type{ink} gives the hue and saturation of the whole ramp (computed
+%D in OKLCH by florilegium-ink.lua), \type{accent} the copper of the hairlines.
+
+\definecolor[ink]   [h=2456C4]
+\definecolor[accent][h=B4662F]
+\definecolor[florilegium:label][s=.5] % xcolor's gray, for \florilegiumlabel
+\definecolor[florilegium:hidden][a=1,t=0] % t is the opacity
+
+%D Marks in the text: a whatsit that the page's background finds in the page box
+%D when the page is shipped out, so the garden knows the height of the line.
+
+\permanent\tolerant\protected\def\florilegiumbloom[#1]%
+  {\ctxlua{thirddata.florilegium.mark("bloom", "\luaescapestring{#1}")}}
+
+\permanent\protected\def\florilegiumage#1%
+  {\ctxlua{thirddata.florilegium.age = #1}}
+
+\permanent\protected\def\florilegiumframe
+  {\florilegium_frame}
+
+\tolerant\def\florilegium_frame[#1]#:#2#3%
+  {\ctxlua{thirddata.florilegium.frame(#2, #3, "#1")}}
+
+\permanent\protected\def\florilegiuminitialfont#1%
+  {\ctxlua{thirddata.florilegium.initial_font = "\luaescapestring{#1}"}}
+
+%D Where the text ends, measured in the same pass: \type{\pagetotal} is the height of
+%D the material already on the current page.
+
+\def\florilegium_end_page {-1}
+\def\florilegium_end_total{0}
+
+\permanent\protected\def\florilegiumtextend
+  {\par
+   \xdef\florilegium_end_page {\the\realpageno}%
+   \xdef\florilegium_end_total{\number\dimexpr\pagetotal+\pagedepth\relax}}
+
+%D The garden: the page's background overlay, at the lower-left corner of the paper.
+%D The page box (\type{\pagebox}) already holds the page's text, its header and its
+%D footer, and is searched for the marks.
+
+\newbox\b_florilegium_page
+
+\def\florilegium_page
+  {\settexthoffset
+   \setbox\b_florilegium_page\hpack to \zeropoint
+     {\ctxlua{thirddata.florilegium.ctx_page {
+        paperwidth = \number\paperwidth, paperheight = \number\paperheight,
+        textleft = \number\texthoffset, makeupwidth = \number\makeupwidth,
+        topspace = \number\topspace, topheight = \number\topheight, topdistance = \number\topdistance,
+        headerheight = \number\headerheight, headerdistance = \number\headerdistance,
+        textheight = \number\textheight,
+        footerdistance = \number\footerdistance, footerheight = \number\footerheight,
+        strutht = \number\strutht, strutdp = \number\strutdp,
+        userpage = \number\userpageno, realpage = \number\realpageno,
+        lastpage = structures.counters.last("realpage", 1) or 0,
+        endtotal = \ifnum\realpageno=\florilegium_end_page\space\florilegium_end_total \else nil \fi,
+        box = \number\pagebox,
+      }}%
+      \hss}%
+   \wd\b_florilegium_page\zeropoint
+   \ht\b_florilegium_page\zeropoint
+   \dp\b_florilegium_page\zeropoint
+   \vbox to \overlayheight{\vss\hbox to \overlaywidth{\box\b_florilegium_page\hss}}}
+
+\defineoverlay[florilegium][\florilegium_page]
+
+%D Captions a theme sets in the margin (the math theme's symbols and equations): a
+%D box set by TeX, placed by its TikZ anchor and rotated and scaled about it.
+
+\newbox\b_florilegium_caption
+
+\permanent\protected\def\FlorilegiumCaptionSet#1#2#3% size color text
+  {\setbox\b_florilegium_caption\hbox
+     {\switchtobodyfont[#1]\colored[#2]{#3}}}
+
+\permanent\protected\def\FlorilegiumCaptionPut#1#2#3#4% x y (sp) anchor rotation
+  {\expanded{\florilegium_caption_put_indeed{#1}{#2}{#4}\ctxlua{thirddata.florilegium.ctx_anchor(\number\b_florilegium_caption, "#3")}}}
+
+\newdimen\d_florilegium_caption_r
+
+\protected\def\florilegium_caption_put_indeed#1#2#3#4#5% x y (sp) rotation dx dy (sp)
+  {\ifdim#3\points=\zeropoint
+     \hpack to \zeropoint
+       {\kern#1\scaledpoint
+        \raise#2\scaledpoint\hpack to \zeropoint
+          {\kern#4\scaledpoint
+           \raise#5\scaledpoint\box\b_florilegium_caption
+           \hss}%
+        \hss}%
+   \else
+     % A rotated caption is turned inside a form XObject of its own, a square of
+     % side 2r about the anchor: rotated text in the page's own content stream
+     % makes ConTeXt's backend lose its place for the rest of the page.
+     \d_florilegium_caption_r\dimexpr\wd\b_florilegium_caption+\ht\b_florilegium_caption+\dp\b_florilegium_caption\relax
+     \setbox\b_florilegium_caption\hpack to 2\d_florilegium_caption_r
+       {\kern\d_florilegium_caption_r
+        \hpack to \zeropoint
+          {\dostartrotation{#3}%
+           \kern#4\scaledpoint
+           \raise#5\scaledpoint\box\b_florilegium_caption
+           \dostoprotation
+           \hss}%
+        \hss}%
+     \ht\b_florilegium_caption\d_florilegium_caption_r
+     \dp\b_florilegium_caption\d_florilegium_caption_r
+     \saveboxresource\b_florilegium_caption
+     \hpack to \zeropoint
+       {\kern\dimexpr#1\scaledpoint-\d_florilegium_caption_r\relax
+        \raise#2\scaledpoint\hpack{\useboxresource\lastsavedboxresourceindex}%
+        \hss}%
+   \fi}
+
+%D The flowers at the headings: the mark goes into the typeset title, after the
+%D number; a section gets a large flower, a subsection a spray of small ones.
+
+\protected\def\florilegium_head_text#1#2%
+  {\ctxlua{thirddata.florilegium.mark("heading", #1)}#2}
+
+%D Started at \type{\starttext}: the margin and the flowers at the headings.
+
+\def\florilegium_start
+  {\global\settrue\c_florilegium_started
+   \doif{\florilegiumparameter{margin}}\v!yes
+     {\setupbackgrounds[\v!page][\c!background=florilegium]}%
+   \doif{\florilegiumparameter{sections}}\v!yes
+     {\setuphead[\v!section]   [\c!deeptextcommand=\florilegium_head_text{1}]%
+      \setuphead[\v!subsection][\c!deeptextcommand=\florilegium_head_text{2}]}}
+
+\appendtoks \florilegium_start \to \everystarttext
+
+%D A decorated initial: a square tile from the cap height of the first line to the
+%D baseline of line #1, the paragraph's first #1 lines indented beside it. The
+%D letter itself is also typeset, fully transparent, so the paragraph still copies
+%D and searches as a whole word.
+
+\permanent\tolerant\protected\def\florilegiuminitial[#1]#:#2%
+  {\par
+   \begingroup
+     \scratchcounter\ifparameter#1\or#1\else4\fi\relax
+     \scratchdimen\fontcharht\font`H\relax
+     \global\scratchdimenone\dimexpr\baselineskip*\numexpr\scratchcounter-1\relax+\scratchdimen\relax
+     \global\scratchdimentwo\scratchdimen
+     \global\scratchcountertwo\scratchcounter
+   \endgroup
+   \hangindent\dimexpr\scratchdimenone+0.6\emwidth\relax
+   \hangafter-\scratchcountertwo\relax
+   \noindentation
+   \dontleavehmode
+   \ctxlua{thirddata.florilegium.ctx_initial("\luaescapestring{#2}", \number\scratchdimenone, \number\hangindent, \number\scratchdimentwo)}%
+   \llap{\color[florilegium:hidden]{#2}}%
+   \ignorespaces}
+
+%D One primitive in the text, in a box the size of a letter:
+%D \type{\florilegiumornament[size=2em,ink=5B2A1F,angle=20,seed=random]{flower}}.
+
+\permanent\tolerant\protected\def\florilegiumornament[#1]#:#2%
+  {\dontleavehmode
+   \begingroup
+     \getdummyparameters[size=1em,ink=,accent=,angle=0,seed=,#1]%
+     \scratchdimen\dimexpr\dummyparameter{size}\relax
+     \hbox to \scratchdimen
+       {\ctxlua{thirddata.florilegium.ctx_ornament("\luaescapestring{#2}", \number\scratchdimen,
+          "\luaescapestring{\dummyparameter{ink}}", "\luaescapestring{\dummyparameter{accent}}",
+          \dummyparameter{angle}, "\luaescapestring{\dummyparameter{seed}}")}%
+        \hss
+        \vrule \s!height .85\scratchdimen \s!depth .15\scratchdimen \s!width \zeropoint}%
+   \endgroup}
+
+%D Any primitive at the current point, moved by x, y (cm) and turned by rotate
+%D (degrees); in a \type{\startflorilegiumpicture} the point is its lower-left
+%D corner. The second argument is the Lua argument list of the primitive, e.g.
+%D \type{\florilegiumdraw{leaf}{2.0, {depth=0.6}}}; with a theme its primitives too.
+
+\permanent\tolerant\protected\def\florilegiumdraw[#1]#:#2#3%
+  {\dontleavehmode
+   \begingroup
+     \getdummyparameters[x=0,y=0,rotate=0,scale=1,#1]%
+     \hpack to \zeropoint
+       {\ctxlua{thirddata.florilegium.ctx_draw(\dummyparameter{x}, \dummyparameter{y}, \dummyparameter{rotate}, \dummyparameter{scale}, "#2", #3)}%
+        \hss}%
+   \endgroup
+   \ignorespaces}
+
+\permanent\tolerant\protected\def\florilegiumlabel[#1]#:#2%
+  {\begingroup
+     \getdummyparameters[x=0,y=0,style=\ss\tfxx,color=florilegium:label,#1]%
+     \setbox\scratchbox\hbox{\dummyparameter{style}\color[\dummyparameter{color}]{#2}}%
+     \hpack to \zeropoint
+       {\kern\dimexpr\dummyparameter{x}cm-.5\wd\scratchbox\relax
+        \raise\dimexpr\dummyparameter{y}cm-.5\ht\scratchbox+.5\dp\scratchbox\relax\box\scratchbox
+        \hss}%
+   \endgroup
+   \ignorespaces}
+
+\permanent\tolerant\protected\def\florilegiumline[#1]#:#2#3#4#5%
+  {\begingroup
+     \getdummyparameters[gray=.7,width=.4,#1]%
+     \hpack to \zeropoint{\ctxlua{thirddata.florilegium.ctx_line(#2, #3, #4, #5, \dummyparameter{gray}, \dummyparameter{width})}\hss}%
+   \endgroup
+   \ignorespaces}
+
+\permanent\tolerant\protected\def\startflorilegiumpicture[#1]%
+  {\dontleavehmode
+   \hbox\bgroup
+   \getdummyparameters[width=10cm,height=10cm,frame=\v!no,#1]%
+   \edef\p_florilegium_w{\the\dimexpr\dummyparameter{width}\relax}%
+   \edef\p_florilegium_h{\the\dimexpr\dummyparameter{height}\relax}%
+   \vbox to \p_florilegium_h\bgroup
+     \vss
+     \hbox to \p_florilegium_w\bgroup
+       \doif{\dummyparameter{frame}}\v!yes
+         {\hpack to \zeropoint{\ctxlua{thirddata.florilegium.ctx_rect(0, 0,
+            \number\dimexpr\p_florilegium_w\relax * 2.54 / (72.27 * 65536),
+            \number\dimexpr\p_florilegium_h\relax * 2.54 / (72.27 * 65536), 0.85, 0.4)}\hss}}%
+       \ignorespaces}
+
+\permanent\protected\def\stopflorilegiumpicture
+  {\unskip\hss\egroup\egroup\egroup}
+
+\protect
+
+\stopmodule
+
+\endinput

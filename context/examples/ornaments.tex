@@ -1,0 +1,35 @@
+%% ornaments.tex -- \florilegiumornament: one primitive in the text, sized like a
+%% letter (ConTeXt):  context ornaments.tex
+\usemodule[florilegium][margin=no]
+\definepapersize[ornaments][width=130mm,height=74mm]
+\setuppapersize[ornaments][ornaments]
+\setuplayout[backspace=7mm,width=116mm,topspace=7mm,header=0pt,headerdistance=0pt,
+  height=60mm,footer=0pt,footerdistance=0pt]
+\setupbodyfont[modern,11pt]
+\setuppagenumbering[location=]
+\setupindenting[no]
+\setupwhitespace[5pt]
+\setuptolerance[verytolerant,stretch]
+\setuptype[style=\ttx]
+
+\starttext
+\florilegiumornament{leaf}\enspace A paragraph can open with one leaf the size of a
+letter, set with \type{\florilegiumornament{leaf}}. Each ornament in a
+document gets a shape of its own,
+\florilegiumornament{leaf}\,\florilegiumornament{leaf}\,\florilegiumornament{leaf}\,\florilegiumornament{leaf},
+and keeps it from one build to the next; \type{seed=random} draws a new one every time.
+
+\florilegiumornament[size=2.4em]{leaf}\enspace\type{size=2.4em} makes it larger, \type{ink=5B2A1F} paints it in
+another color \florilegiumornament[ink=5B2A1F]{leaf}\,\florilegiumornament[ink=2F6B4F]{leaf}\,\florilegiumornament[ink=8E1B3A]{leaf}\,\florilegiumornament[ink=4B3B8F]{leaf},
+and \type{angle=30} turns it.
+
+Any primitive will do:
+\florilegiumornament{flower}\,\florilegiumornament{blossom}\,\florilegiumornament{bud}\,\florilegiumornament{bell}\,%
+\florilegiumornament{lily}\,\florilegiumornament{butterfly}\,\florilegiumornament{bee}\,\florilegiumornament{bird}\,%
+\florilegiumornament{hedera}\,\florilegiumornament{sparkle}\,\florilegiumornament{cyme}\,\florilegiumornament{umbel}.
+
+\startalignment[middle]
+\florilegiumornament[size=3.6em]{flower}\qquad\florilegiumornament[size=3.6em,angle=-10]{leaf}\qquad
+\florilegiumornament[size=3.6em]{butterfly}\qquad\florilegiumornament[size=3.6em]{hedera}
+\stopalignment
+\stoptext
