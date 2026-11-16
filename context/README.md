@@ -75,8 +75,9 @@ wide enough to grow in. A complete document:
   ConTeXt's page number off (`\setuppagenumbering[location=]`) and put it in the footer text.
 - `\florilegiumtextend` hands the garden the space under the last line of the text. When that
   page has footnotes, which stand in that space, the garden keeps to its margin there.
-- In a narrow margin the garden's larger plants (a fern's fronds, most of all) can be wider
-  than the margin; the drawing is cut off a little before the text block, never drawn under it.
+- In a narrow margin a large leaf or flower near the column's edge can still be cut off a
+  little before the text block; the garden is never drawn under the text. (Ferns are
+  shortened to fit the column in this fork.)
 
 Lines from the module in the log start with `florilegium`; its warnings are worth reading
 when a page looks wrong.
