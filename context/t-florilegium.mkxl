@@ -225,8 +225,14 @@
   {\par
    \doifnot{\florilegiumparameter{composition}}{grown}
      {\writestatus{florilegium}{warning: \string\florilegiumtextend\space needs composition=grown; nothing is done with it}}%
-   \xdef\florilegium_end_page {\the\realpageno}%
-   \xdef\florilegium_end_total{\number\dimexpr\pagetotal+\pagedepth\relax}}
+   \xdef\florilegium_end_total{\number\dimexpr\pagetotal+\pagedepth\relax}%
+   % Footnotes stand at the foot of the text block, in the space the garden would be
+   % given: with footnotes on this page the garden keeps to its margin.
+   \ifdim\insertheights>\zeropoint
+     \writestatus{florilegium}{the last page has footnotes: the garden does not grow under the text}%
+   \else
+     \xdef\florilegium_end_page{\the\realpageno}%
+   \fi}
 
 %D The garden: the page's background overlay, at the lower-left corner of the paper.
 %D The page box (\type{\pagebox}) already holds the page's text, its header and its
