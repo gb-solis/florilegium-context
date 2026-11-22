@@ -92,6 +92,7 @@ when a page looks wrong.
   [composition=grown,   % authored (default) | grown
    margin=yes,          % no: no margin, only \florilegiumdraw and ornaments
    visitors=yes,        % no: no butterflies, bees, snails or birds
+   shells=yes,          % no: no shells on the grown margin's ground
    sections=no,         % yes: a flower beside every \section and \subsection
    aging=no,            % yes: spring on the first page, autumn on the last
    theme=,              % geometric | math | any florilegium-theme-<name>.lua
@@ -157,7 +158,7 @@ describe what 2.0 and 2.1 added (the species of the grown margin, shells, tracer
 | LaTeX | ConTeXt |
 |---|---|
 | `\usepackage[grown,sections,aging]{florilegium}` | `\usemodule[florilegium][composition=grown,sections=yes,aging=yes]` |
-| `nomargin`, `novisitors` | `margin=no`, `visitors=no` |
+| `nomargin`, `novisitors`, `noshells` | `margin=no`, `visitors=no`, `shells=no` |
 | `theme=`, `density=`, `intensity=` | the same keys |
 | `\def\florilegiumseed{7}` | `seed=7`, or `context --florilegiumseed=7` |
 | `\definecolor{ink}{HTML}{5B2A1F}` | `\definecolor[sepia][h=5B2A1F]` + `inkcolor=sepia` (and `accentcolor=` for `accent`) |
@@ -189,6 +190,10 @@ blank.
 ## What is missing
 
 - The TikZ library of florilegium 2.0 (`\usetikzlibrary{florilegium}`) has no counterpart here.
+- What florilegium 2.1 added to the LaTeX package has no command here yet: `\florilegiumoff`,
+  `\florilegiumon` and `\florilegiumhide`, the tracery headpieces (`headpieces`,
+  `\florilegiumheadpiece`), `\florilegiuminitialframe`, and the tags of a tagged PDF. The shells
+  on the ground and `theme=shells` are drawn by the shared code and work as they do in LaTeX.
 - The numbers given to `\florilegiumage`, `density`, `intensity`, `seed` and an ornament's
   `angle` are not checked as the LaTeX package checks them.
 - `sections=yes` sets the `deeptextcommand` of `section` and `subsection`, in place of one

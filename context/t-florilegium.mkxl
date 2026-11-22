@@ -52,6 +52,7 @@
 %C     [composition=grown,   % authored | grown
 %C      margin=yes,          % no: no margin, only \florilegiumdraw and ornaments
 %C      visitors=yes,        % no: no butterflies, bees, snails or birds
+%C      shells=yes,          % no: no shells on the grown margin's ground
 %C      sections=no,         % yes: a flower beside every \section and \subsection
 %C      aging=no,            % yes: spring on the first page, autumn on the last
 %C      theme=,              % geometric | math | any florilegium-theme-<name>.lua
@@ -119,6 +120,7 @@
    composition=authored,
    margin=\v!yes,
    visitors=\v!yes,
+   shells=\v!yes,
    sections=\v!no,
    aging=\v!no,
    theme=,
@@ -132,6 +134,7 @@
   {\ctxlua{
      thirddata.florilegium.composition = "\florilegiumparameter{composition}"
      thirddata.florilegium.visitors = "\florilegiumparameter{visitors}" \string~= "no"
+     thirddata.florilegium.shells = "\florilegiumparameter{shells}" \string~= "no"
      thirddata.florilegium.aging = "\florilegiumparameter{aging}" == "yes"
      thirddata.florilegium.density = tonumber("\florilegiumparameter{density}") or 1
      thirddata.florilegium.intensity = tonumber("\florilegiumparameter{intensity}") or 1
@@ -154,6 +157,7 @@
   [composition=\moduleparameter{florilegium}{composition},
    margin=\moduleparameter{florilegium}{margin},
    visitors=\moduleparameter{florilegium}{visitors},
+   shells=\moduleparameter{florilegium}{shells},
    sections=\moduleparameter{florilegium}{sections},
    aging=\moduleparameter{florilegium}{aging},
    theme=\moduleparameter{florilegium}{theme},
