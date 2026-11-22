@@ -12,7 +12,7 @@
 -- computed in OKLCH so the light end stays blue instead of turning gray.
 
 local M = {}
-M.version = "2.0.1"                 -- the release; florilegium.lua checks that every file has the same
+M.version = "2.1.0"                 -- the release; florilegium.lua checks that every file has the same
 
 local fmt, floor, sqrt, sin, cos, atan, pi, abs = string.format, math.floor, math.sqrt, math.sin, math.cos, math.atan, math.pi, math.abs
 local concat = table.concat
@@ -265,7 +265,7 @@ function M.tag(t) local old = tag tag = t return old end
 function M.record(on) recording = on tag = nil end
 
 -- M.backend: nil under LuaLaTeX (pgf registers the graphics states, a pdf_literal
--- whatsit carries the drawing); the ConTeXt module (t-florilegium.lua) sets it to
+-- whatsit carries the drawing); another format's glue (a ConTeXt module) sets it to
 -- { extgstate = function(name, opacity, multiply), literal = function(data) }
 M.backend = nil
 local gs_known = {}

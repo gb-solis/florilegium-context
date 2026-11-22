@@ -1,10 +1,10 @@
 %D \module
 %D   [     file=t-florilegium,
-%D      version=2.0.1,
+%D      version=2.1.0,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=florilegium: a procedurally generated floral page margin,
 %D       author={Kevin Raymond (florilegium), Luis Montgomery (\CONTEXT\ port), Gabriel Solis (this fork)},
-%D         date=2026-11-15,
+%D         date=2026-11-22,
 %D    copyright=Kevin Raymond,
 %D      license=MIT]
 %C

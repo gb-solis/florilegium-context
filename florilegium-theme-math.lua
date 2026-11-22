@@ -21,7 +21,7 @@ local ink = require("florilegium-ink")
 local figs = require("florilegium-figures")
 local FIG, FAM = figs.figures, figs.families
 local M = {}
-M.version = "2.0.1"                 -- the release; florilegium.lua checks that every file has the same
+M.version = "2.1.0"                 -- the release; florilegium.lua checks that every file has the same
 
 local sin, sqrt, pi, floor, max, min = math.sin, math.sqrt, math.pi, math.floor, math.max, math.min
 local tone = ink.tone
@@ -142,6 +142,16 @@ function M.page(g, grow)
     if free_at(x, y) >= R + 0.05 then
       figure(heading and "hypotrochoid" or (FIG[mk.arg] and mk.arg or "maurer"), x, y, R, heading)
       disc(x, y, R + 0.1, 1)
+    end
+  end
+
+  -- a headpiece's vine (\florilegiumheadpiece) carries flora's leaflets, as on a themed
+  -- garden's page; drawn under everything, in every frame
+  for _, mk in ipairs(g.marks or {}) do
+    if mk.kind == "headpiece" and g.headpiece then
+      local layer, tag = ink.layer(-1), ink.tag(nil)
+      g.headpiece(mk, function(r, L) ink.scale(L) grow.flora.leaflet(r) end)
+      ink.layer(layer) ink.tag(tag)
     end
   end
 

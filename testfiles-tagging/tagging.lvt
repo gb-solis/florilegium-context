@@ -1,0 +1,35 @@
+% tagging.lvt -- a tagged PDF (issue #48): the margin and every drawing in the text are
+% decoration (artifacts), but for an ornament given alt (a Figure) or actualtext (a Span);
+% the initial's letter reads in its word ("This"), and a headpiece leaves no empty paragraph.
+% The second page has no margin, so its headpiece is drawn in the text.
+\DocumentMetadata{lang=en-US, pdfversion=2.0, pdfstandard=ua-2, tagging=on}
+\input{regression-test}
+\documentclass{article}
+\usepackage[a4paper,left=68mm,right=22mm]{geometry}
+\usepackage[grown,sections]{florilegium}
+\title{florilegium tagging test}
+\begin{document}
+\START
+% the structure tree, read from the PDF once the run is over; the rest of the log (what grew)
+% is left out, so that a change to the drawing doesn't fail this test
+\SHOWPDFTAGS
+\OMIT
+\section{Spring}
+\florilegiuminitial[4]{T}his paragraph starts with a decorated T, and the margin beside
+it grows a garden of its own. The paragraph runs on for a few lines more, so that the text
+wraps round the initial's tile and the next paragraph starts below it, as it would in a
+document that uses a four-line initial. A screen reader should read the first word as one
+word, with its first letter, and pass over the tile.
+
+Plain \florilegiumornament{leaf} decoration.
+Described \florilegiumornament[alt={an ivy leaf, curled}]{leaf} figure.
+Read \florilegiumornament[actualtext={*}]{flower} as text.
+Both \florilegiumornament[alt={a flower}, actualtext={*}]{flower} given.
+\florilegiumheadpiece[vine=none]
+After the headpiece.
+\clearpage
+\florilegiumoff
+\florilegiumheadpiece
+Under a headpiece with the margin off.
+% \end{document}, not \END, which stops TeX before LaTeX writes the structure tree
+\end{document}

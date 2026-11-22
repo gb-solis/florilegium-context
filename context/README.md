@@ -6,9 +6,10 @@ MetaPost. The drawing code is that of the LaTeX package, `florilegium.sty`; the 
 replaces only the part that talks to TeX.
 
 This is a fork of [florilegium](https://github.com/kevinraymond/florilegium), on its
-release 2.0.1. The branch `context` adds the module in this folder and a few lines in three
-of the drawing files (`florilegium.lua`, `florilegium-ink.lua`, `florilegium-initial.lua`)
-that let them run without LaTeX.
+release 2.1.0. The branch `context` adds the module in this folder. The openings the drawing
+code needs to run without LaTeX (`ink.backend`, `sync_transform`, `page_marks`, `captions`)
+are part of florilegium itself since 2.1.0; the branch also carries a fix to the fern's
+fronds in `florilegium-grow.lua` that has not been taken upstream yet.
 
 ## Credits
 
@@ -148,8 +149,8 @@ inside a `\dorecurse`), or at the current point:
 | `env-florilegium.tex` | their look: the LaTeX package's page (A4, 11 pt Latin Modern, a 68 mm margin), article's headings, amsthm's blocks |
 
 With the module installed: copy the folder somewhere and run `context florilegium-grow.tex`.
-The examples were written for florilegium 1.3; they build with 2.0.1, but their text does not
-describe what 2.0 added (the species of the grown margin).
+The examples were written for florilegium 1.3; they build with 2.1.0, but their text does not
+describe what 2.0 and 2.1 added (the species of the grown margin, shells, tracery headpieces).
 
 ## From the LaTeX package
 

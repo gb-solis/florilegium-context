@@ -9,7 +9,7 @@
 -- by Gabriel Solis (https://github.com/gb-solis/florilegium-context).
 
 local M = {}
-M.version = "2.0.1"                -- the release; it must be florilegium.lua's, checked below
+M.version = "2.1.0"                -- the release; it must be florilegium.lua's, checked below
 local this = M.version
 
 -- the drawing code sends its warnings (an authored margin on a page it was not made

@@ -8,6 +8,8 @@ on:
 
 # Every action is pinned to a full commit SHA (the version is in the comment beside it);
 # Dependabot proposes new ones once a month. Jobs get only the permissions they need.
+# apt-get gives up on a mirror after 30 s and tries again, three times at most: a mirror that
+# stalled once held a job for its whole timeout.
 permissions:
   contents: read
 
@@ -33,7 +35,7 @@ jobs:
           TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
         run: tools/versioncheck.sh ${TAG:+"$TAG"}
       - name: install Lua 5.3, 5.4 and luacheck
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.3 lua5.4 lua-check > /dev/null
+        run: sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update -qq && sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install -y -qq lua5.3 lua5.4 lua-check > /dev/null
       - name: the Lua passes luacheck
         run: luacheck .
       - name: the same pages under both
@@ -43,7 +45,7 @@ jobs:
 
   # The four documents, which a release carries, and pages that are only checked: the
   # species sheet (the Lua engine under LuaLaTeX, by the library's default; pure TikZ is the
-  # tikz job's), and the specimen sheets and the ornaments, which draw through
+  # tikz jobs'), and the specimen sheets and the ornaments, which draw through
   # \florilegiumdraw and \florilegiumornament, which read pgf's transform from its internal
   # macros (florilegium.lua: sync_transform), so a pgf that renamed them would fail here and
   # not in someone's document.
@@ -69,12 +71,14 @@ jobs:
             florilegium-doc.tex
           latexmk_use_lualatex: true
           # Lua does pgfmath's arithmetic exactly where the species need it (pgfmathcheck), and
-          # the TikZ library and the Lua sample the same species and visitors (tikzcheck); the
-          # tikz job below compares what the two engines draw
+          # the TikZ library and the Lua sample the same species, visitors, windows of
+          # tracery and shells (tikzcheck); the tikz jobs below compare what the two engines draw
           post_compile: >-
             texlua tools/pgfmathcheck.lua 20000 &&
             texlua tools/tikzcheck.lua 1 1000 &&
-            texlua tools/tikzcheck.lua 1 1000 lualatex v:any
+            texlua tools/tikzcheck.lua 1 1000 lualatex v:any &&
+            texlua tools/tikzcheck.lua 1 1000 lualatex t:any &&
+            texlua tools/tikzcheck.lua 1 1000 lualatex s:any
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: florilegium-pdfs
@@ -85,32 +89,74 @@ jobs:
             showcase.pdf
             spread.pdf
 
-  # The species in pure TikZ, which promise pdfLaTeX too, on every core of the runner
-  # (tools/tikzcheck-ci.sh, which latex-action runs as its compiler, in its TeX Live). Every
-  # page of the specimen sheet is typeset under pdflatex in a run of its own, all at once, with
-  # the main memory a strip of plants needs (specimen-tikz.tex says why); a page fails on any
-  # error, and on the library's warning that it could not patch pgf's number scanner. Then
-  # tikzcheck draw quick builds the same pics with engine=tikz and engine=lua, each in as many
-  # runs as there are cores, and compares their renders (pdftoppm, which the image lacks:
-  # poppler-utils): a flower, a leaf and an inflorescence of every body plan, every kind of
-  # cluster, leaf, fern and visitor, a plant in three seasons. Pure TikZ is slow: in one run it
-  # took 70 minutes here. The pages, the pics' shards and the comparison (of the inked part of
-  # each page only) now share the runner's cores, about 12 minutes on four threads of a fast
-  # desktop, beside pdfs.
-  tikz:
+  # Whether a pull request changes anything but Markdown. The tikz jobs read no .md file, so a
+  # pull request that changes only Markdown skips them. pdfs and zip still run, since the manual
+  # and the zip take the README and docs/. A skipped job counts as passed, so this never holds
+  # up a merge.
+  changes:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.files.outputs.code }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: the pure-TikZ species sheet page by page (pdflatex), and the two engines' pics compared
+          fetch-depth: 2
+      # A pull request checks out its merge commit, whose first parent is the base branch, so
+      # the diff between the two is what the pull request changes. A manual run always runs
+      # tikz, and a push to main or a tag never does (the tikz jobs' own condition).
+      - name: whether anything but Markdown changed
+        id: files
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          code=true
+          if [ "$EVENT" = pull_request ]; then
+            files=$(git diff --no-renames --name-only HEAD^1 HEAD)
+            if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qv '\.md$'; then
+              code=false
+            fi
+            printf '%s\n' "$files"
+          fi
+          echo "code=$code" | tee -a "$GITHUB_OUTPUT"
+
+  # The species in pure TikZ, which promise pdfLaTeX too, one family of drawings a job, on
+  # every core of its runner (tools/tikzcheck-ci.sh, which latex-action runs as its compiler,
+  # in its TeX Live; pre_compile names the family). Each of the family's pages of the specimen
+  # sheet is typeset under pdflatex in a run of its own, all at once, with the main memory a
+  # strip of plants needs (specimen-tikz.tex says why); a page fails on any error, and on the
+  # library's warning that it could not patch pgf's number scanner. Beside them tikzcheck draw
+  # builds the family's pics with engine=tikz and engine=lua, each in as many runs as there are
+  # cores, and compares their renders (pdftoppm, which the image lacks: poppler-utils). Pure
+  # TikZ is slow. All the families in one job took over 40 minutes on the runner, and each new
+  # one made it longer; a job each keeps the wait at the slowest family's, the plants (the
+  # specimen sheet's two strips). They run on pull requests that change more than Markdown and
+  # by hand. A push to main is the merge of a pull request that ran them, and a tag doesn't
+  # need them either.
+  tikz:
+    needs: changes
+    if: >-
+      needs.changes.outputs.code == 'true' &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        family: [plants, fern, visitors, tracery, shells]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: the family's pages of the species sheet in pure TikZ (pdflatex), and its pics in both engines compared
         uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
         with:
           root_file: tools/tikzcheck-ci.sh
           compiler: sh
           args: -e
           extra_system_packages: poppler-utils
+          pre_compile: export TIKZCHECK_FAMILY=${{ matrix.family }}
 
   # l3build's regression tests (build.lua, testfiles/): each test typesets a few pages and logs
   # the md5 of every drawing on them, so a change that moves one point of one drawing fails
@@ -126,14 +172,36 @@ jobs:
           persist-credentials: false
       - name: install TeX Live 2023 as tools/Dockerfile does
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends texlive-luatex texlive-latex-recommended \
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update -qq
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install -y -qq --no-install-recommends texlive-luatex texlive-latex-recommended \
             texlive-latex-extra texlive-pictures texlive-fonts-recommended lmodern cm-super > /dev/null
       - name: every test logs what was recorded
         run: l3build check
       - name: what differs
         if: failure()
         run: cat build/l3build/test/*.diff
+
+  # The tagged-PDF test (issue #48). It builds testfiles-tagging/tagging.lvt as a tagged PDF
+  # and compares the PDF's tags (which parts are decoration, a figure or text) with the list
+  # saved in tagging.tlg. TeX Live 2023 can't list a PDF's tags, so this job runs in
+  # latex-action's newer TeX Live, with tools/tagging-ci.sh as its compiler. The list holds
+  # nothing of the drawing, so a change to how a flower is drawn won't fail this job. A new
+  # LaTeX release can change the tags it writes; then the job fails until the list is saved
+  # again with make check-tagging TAGGING=save.
+  tagging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: the tags of a tagged document
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b # 4.1.0
+        with:
+          root_file: tools/tagging-ci.sh
+          compiler: sh
+          # latex-action passes its args to the compiler, and its default ones are latexmk's
+          args: -e
 
   # The PostScript port (postscript/florilegium.ps) through Ghostscript, about 40 runs in a few
   # seconds: the pages postscript/expected.txt records, every spelling of an option, the clock
@@ -150,8 +218,8 @@ jobs:
           persist-credentials: false
       - name: install Ghostscript
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends ghostscript > /dev/null
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update -qq
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install -y -qq --no-install-recommends ghostscript > /dev/null
       - name: the port draws what expected.txt records
         run: postscript/check.sh
 
@@ -169,8 +237,8 @@ jobs:
           persist-credentials: false
       - name: install TeX Live 2023 as tools/Dockerfile does
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends texlive-luatex texlive-latex-recommended \
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update -qq
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install -y -qq --no-install-recommends texlive-luatex texlive-latex-recommended \
             texlive-latex-extra texlive-pictures texlive-fonts-recommended lmodern cm-super > /dev/null
       - name: the manual and the zip
         run: make zip && cp build/florilegium.zip .
@@ -197,9 +265,9 @@ jobs:
   # A release starts with a tag: git tag -a v2.0.0 -m v2.0.0 && git push origin v2.0.0, after a
   # commit that sets the version everywhere (CLAUDE.md, Releases); the lua job stops a tag
   # that florilegium.sty and the Lua files don't agree with, the l3build job one whose
-  # drawings moved without their logs being recorded again, the tikz job one whose two
-  # engines no longer draw the same species, the postscript job one whose PostScript port grows
-  # another garden, and the zip job one whose zip lacks a file. This
+  # drawings moved without their logs being recorded again, the postscript job one whose
+  # PostScript port grows another garden, and the zip job one whose zip lacks a file. The tikz
+  # jobs don't run on a tag, since the pull request ran them on the tree it merged. This
   # job signs a build provenance attestation for the PDFs, the manual and florilegium.zip built
   # from that tag and opens a draft release with them attached, along with the attestation
   # itself as florilegium-pdfs.sigstore.json. The notes are written by hand, and publishing the draft
@@ -211,8 +279,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # tikz runs on the tag too but is not waited for: the pull request and main ran it on the
-    # same tree, and on the runner it takes about 25 minutes
+    # tikz doesn't run on a tag: the pull request ran it on the tree it merged
     needs: [lua, pdfs, l3build, postscript, zip]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:

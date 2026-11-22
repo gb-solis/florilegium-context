@@ -1,0 +1,107 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: Show PDF Tags
+============================================================
+-------- tagging.xml (start) ---------
+<PDF version="2.0">
+ <StructTreeRoot>
+  <Document xmlns="http://iso.org/pdf2/ssn"
+     id="ID.00002"
+    >
+   <Sect xmlns="http://iso.org/pdf2/ssn"
+      id="ID.00006"
+     >
+    <section xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00007"
+       title="Spring"
+       rolemaps-to="H1"
+      >
+     <section-number xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00008"
+        rolemaps-to="Span"
+       >
+      <?MarkedContent page="1" ?>1 
+     </section-number>
+     <?MarkedContent page="1" ?>Spring
+    </section>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00009"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00010"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>This paragraph starts with a decorated T, and the margin beside it grows a garden of its own. The paragraph runs on for a few lines more, so that the text wraps round the initial’s tile and the next paragraph starts below it, as it would in a document that uses a four-line initial. A screen reader should read the first word as one word, with its first letter, and pass over the tile.
+     </text>
+    </text-unit>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00011"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00012"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>Plain 
+      <?MarkedContent page="1" ?> decoration. Described 
+      <Figure xmlns="http://iso.org/pdf2/ssn"
+         id="ID.00013"
+         alt="an ivy leaf, curled"
+        >
+       <?MarkedContent page="1" ?>
+      </Figure>
+      <?MarkedContent page="1" ?> figure. Read 
+      <Span xmlns="http://iso.org/pdf2/ssn"
+         id="ID.00014"
+         actualtext="*"
+        >
+       <?MarkedContent page="1" ?>
+      </Span>
+      <?MarkedContent page="1" ?> as text. Both 
+      <Figure xmlns="http://iso.org/pdf2/ssn"
+         id="ID.00015"
+         alt="a flower"
+        >
+       <?MarkedContent page="1" ?>
+      </Figure>
+      <?MarkedContent page="1" ?> given.
+     </text>
+    </text-unit>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00016"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00017"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="1" ?>After the headpiece.
+     </text>
+    </text-unit>
+    <text-unit xmlns="https://www.latex-project.org/ns/dflt"
+       id="ID.00018"
+       rolemaps-to="Part"
+      >
+     <text xmlns="https://www.latex-project.org/ns/dflt"
+        id="ID.00019"
+        xmlns:Layout="http://iso.org/pdf/ssn/Layout"
+        Layout:TextAlign="Justify"
+        rolemaps-to="P"
+       >
+      <?MarkedContent page="2" ?>Under a headpiece with the margin off.
+     </text>
+    </text-unit>
+   </Sect>
+  </Document>
+ </StructTreeRoot>
+</PDF>
+-------- tagging.xml (end) -----------
+============================================================
